@@ -57,7 +57,7 @@
     if (!email) { $('loginMsg').textContent = 'Escribe tu correo.'; return; }
     $('send').disabled = true;
     const { error } = await db.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: false } });
-    $('loginMsg').textContent = error ? 'No se pudo enviar el acceso. Revisa el correo (debe ser el de administrador).' : 'Listo. Abre el correo en este mismo teléfono y toca el enlace (o escribe el código si trae uno).';
+    $('loginMsg').textContent = error ? (error.status === 429 ? 'Espera un minuto: solo se puede pedir un correo por minuto.' : 'No se pudo enviar el acceso. Revisa el correo (debe ser el de administrador).') : 'Listo. Abre el correo en este mismo teléfono y toca el enlace (o escribe el código de 8 dígitos si trae uno). Puede tardar un minuto.';
     $('send').disabled = false;
   };
   $('verify').onclick = async () => {
