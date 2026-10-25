@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#050b18">
+<title>LENNA · Puente de pruebas</title>
+<style>
+  :root { --bg:#050b18; --fg:#e6edf7; --mut:#93a4bd; --line:#2a3a55; --acc:#5ad1f3; --bad:#ff8b8b; --ok:#7be3a0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width: 36rem; margin: 0 auto; padding: 1.25rem; display:grid; gap:1rem; }
+  h1 { font-size:1.4rem; margin:0; } h2 { font-size:1.1rem; margin:0; }
+  p { margin:0; } .mut { color:var(--mut); font-size:.9rem; }
+  button, input { font:inherit; border-radius:.7rem; border:1px solid var(--line); padding:.8rem; background:#0c1730; color:var(--fg); }
+  button { cursor:pointer; } button.main { background:var(--acc); color:#021018; border-color:var(--acc); font-weight:600; }
+  button:disabled { opacity:.5; cursor:default; }
+  input { width:100%; }
+  .row { display:grid; gap:.6rem; } .card { border:1px solid var(--line); border-radius:1rem; padding:1rem; display:grid; gap:.7rem; }
+  [role=alert] { color:var(--bad); } .ok { color:var(--ok); }
+  details summary { cursor:pointer; color:var(--mut); } textarea { width:100%; min-height:5rem; background:#0c1730; color:var(--fg); border:1px solid var(--line); border-radius:.7rem; padding:.6rem; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Puente LENNA · pruebas</h1>
+  <p class="mut">Entorno de pruebas, separado de producción. Solo consulta el estado del computador.</p>
+
+  <section id="login" class="card" hidden>
+    <h2>Entrar</h2>
+    <label>Correo del administrador<input id="email" type="email" autocomplete="email" inputmode="email"></label>
+    <button id="send" class="main">Enviarme el acceso por correo</button>
+    <label>¿Te llegó un código de 6 dígitos? Escríbelo aquí<input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></label>
+    <button id="verify">Entrar con el código</button>
+    <p id="loginMsg" aria-live="polite"></p>
+  </section>
+
+  <section id="panel" class="card" hidden>
+    <h2>Estado del computador</h2>
+    <p class="mut">Solo consulta. No envía instrucciones a Claude ni a Codex. El computador debe estar encendido y con el puente iniciado.</p>
+    <button id="ask" class="main">Consultar estados</button>
+    <button id="latest">Recuperar última consulta</button>
+    <p class="mut">Si cerraste la pantalla, recupera la consulta anterior: no pide otra lectura al computador.</p>
+    <div id="result" aria-live="polite"></div>
+    <p id="msg" role="alert"></p>
+    <details>
+      <summary>Vincular o revocar este computador</summary>
+      <div class="row" style="margin-top:.7rem">
+        <p class="mut"><strong>Cuidado:</strong> generar una credencial nueva <strong>reemplaza la actual y desconecta el puente</strong> hasta que la guardes en el computador (set-credential.ps1). No lo hagas si el puente ya funciona.</p>
+        <button id="pair">Generar credencial / reemplazar vínculo</button>
+        <textarea id="cred" readonly hidden aria-label="Credencial privada del computador"></textarea>
+        <button id="hide" hidden>Ocultar credencial</button>
+        <button id="revoke">Revocar acceso del computador</button>
+      </div>
+    </details>
+    <button id="logout">Salir</button>
+  </section>
+</main>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
