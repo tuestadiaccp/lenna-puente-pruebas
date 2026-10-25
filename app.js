@@ -48,7 +48,13 @@
   async function enter(session) {
     const { data, error } = await db.from('workspace_members').select('workspace_id, role').eq('user_id', session.user.id);
     const admin = !error && (data ?? []).find(m => m.role === 'admin');
-    if (!admin) { show(false); $('loginMsg').textContent = 'Este correo no es administrador del espacio de pruebas.'; await db.auth.signOut(); return; }
+    if (!admin) {
+      show(false);
+      $('loginMsg').textContent = error
+        ? 'Entraste, pero no pude leer tu rol en el espacio de pruebas (' + (error.code || error.message || 'error') + '). Avísale a quien te ayuda.'
+        : 'Entraste con ' + (session.user.email || 'ese correo') + ', pero ese correo no es administrador del espacio de pruebas. Usa el correo de administrador.';
+      await db.auth.signOut(); return;
+    }
     workspace = admin.workspace_id; show(true);
   }
 
@@ -79,9 +85,20 @@
   });
   $('logout').onclick = async () => { polling++; await db.auth.signOut(); workspace = null; show(false); };
 
+  // Si el enlace del correo vuelve con un error (vencido, ya usado, bloqueado por el visor del correo), se dice con claridad.
+  function linkProblem() {
+    const params = new URLSearchParams(location.hash.replace(/^#/, '') || location.search);
+    const code = params.get('error_code') || params.get('error');
+    if (!code) return null;
+    history.replaceState(null, '', location.pathname);
+    if (code === 'otp_expired') return 'El enlace del correo está vencido o ya se usó (algunos correos lo "abren" solos y lo gastan). Pide uno nuevo y ábrelo directo, sin vista previa.';
+    return 'El enlace del correo no funcionó (' + code + '). Pide uno nuevo.';
+  }
+
   (async () => {
+    const problem = linkProblem();
     const { data } = await db.auth.getSession();
-    if (data.session) await enter(data.session); else show(false);
+    if (data.session) await enter(data.session); else { show(false); if (problem) $('loginMsg').textContent = problem; }
     db.auth.onAuthStateChange((event, session) => { if (event === 'SIGNED_IN' && session && !workspace) void enter(session); });
   })();
 })();
