@@ -1,1 +1,1 @@
-window.LENNA_PUENTE = {"supabaseUrl":"https://jasumngrdgycgngazved.supabase.co","publishableKey":"sb_publishable_lkfiQU4ysCQ3ObIhzv5Ohw_nlsgPaHu"};
+window.LENNA_PUENTE = {"supabaseUrl":"https://jasumngrdgycgngazved.supabase.co","publishableKey":"sb_publishable_lkfiQU4ysCQ3ObIhzv5Ohw_nlsgPaHu","workspaceId":"2bd2bca8-0c27-4e62-ab69-e8087e6ba9d5"};

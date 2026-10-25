@@ -45,17 +45,17 @@
   const busyWhile = async (buttons, fn) => { buttons.forEach(b => $(b).disabled = true); try { await fn(); } catch (e) { setMsg(e.message || 'Consulta no disponible'); } finally { buttons.forEach(b => $(b).disabled = false); } };
   const ALL = ['ask', 'latest', 'pair', 'revoke'];
 
+  // El espacio es fijo (config.js). El permiso de administrador lo valida el SERVIDOR: si no lo eres, la consulta se rechaza (42501).
   async function enter(session) {
-    const { data, error } = await db.from('workspace_members').select('workspace_id, role').eq('user_id', session.user.id);
-    const admin = !error && (data ?? []).find(m => m.role === 'admin');
-    if (!admin) {
-      show(false);
-      $('loginMsg').textContent = error
-        ? 'Entraste, pero no pude leer tu rol en el espacio de pruebas (' + (error.code || error.message || 'error') + '). Avísale a quien te ayuda.'
-        : 'Entraste con ' + (session.user.email || 'ese correo') + ', pero ese correo no es administrador del espacio de pruebas. Usa el correo de administrador.';
+    workspace = cfg.workspaceId;
+    const { error } = await db.rpc('bridge_status_user', { p_workspace: workspace, p_action: 'latest' });
+    if (error && (error.code === '42501' || /not authorized/i.test(error.message || ''))) {
+      show(false); workspace = null;
+      $('loginMsg').textContent = 'Entraste con ' + (session.user.email || 'ese correo') + ', pero ese correo no es el administrador del puente de pruebas. Usa el correo del administrador.';
       await db.auth.signOut(); return;
     }
-    workspace = admin.workspace_id; show(true);
+    show(true);
+    if (error) setMsg(/not paired/i.test(error.message || '') ? 'Todavía no hay un computador vinculado.' : /revoked/i.test(error.message || '') ? 'El acceso del computador está revocado.' : 'El puente avisó: ' + (error.message || 'error'));
   }
 
   $('send').onclick = async () => {
